@@ -15,8 +15,6 @@
 #include "layers/gna_permute.hpp"
 #include "backend/gna_limitations.hpp"
 
-#include <cassert>
-
 using namespace GNAPluginNS;
 
 NGRAPH_RTTI_DEFINITION(ConvertMatmulToPointWiseConvolution, "ConvertMatmulToPointWiseConvolution", 0);
