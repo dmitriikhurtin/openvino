@@ -28,6 +28,12 @@
 #include "gna_plugin_log.hpp"
 #include "gna_slope_scale.h"
 #include "round_float_define.hpp"
+#include "gna_plugin_log.hpp"
+
+#ifdef GNA_DEBUG
+#include <chrono>
+#include <iomanip>
+#endif // GNA_DEBUG
 
 double first_deriv_tanh(const double x) { return(1.0 - tanh(x) * tanh(x)); }
 inline double first_deriv_exp(const double x) { return(exp(x)); }
@@ -63,6 +69,9 @@ double pivot_search(std::vector<pwl_t>& result,
                     const double threshold,
                     const bool negative,
                     size_t iter_num) {
+#ifdef GNA_DEBUG
+    auto start = std::chrono::high_resolution_clock::now();
+#endif // GNA_DEBUG
     std::vector<std::vector<double>> t(N + 1);
     std::vector<std::vector<double>> alpha(N + 1);
     std::vector<std::vector<double>> epsilon(N + 1);
@@ -77,6 +86,11 @@ double pivot_search(std::vector<pwl_t>& result,
     int j;
 
     if (threshold < 0) {
+#ifdef GNA_DEBUG
+        auto end = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<double> diff = end - start;
+        gnalog() << __FILE__ << ':' << __LINE__ << ' ' << __PRETTY_FUNCTION__ << ' ' << diff.count() << '\n';
+#endif // GNA_DEBUG
         return epsilon_final;
     }
     // Figure 4:  Box #1
@@ -137,6 +151,13 @@ double pivot_search(std::vector<pwl_t>& result,
             if (j == iter_num) {
                 THROW_GNA_EXCEPTION << "Failed to converge in pivot_search!";
             }
+
+            gnalog() << "Iteration_number: " << j << ", segments number: " << result.size() << '\n';
+#ifdef GNA_DEBUG
+            auto end = std::chrono::high_resolution_clock::now();
+            std::chrono::duration<double> diff = end - start;
+            gnalog() << __FILE__ << ':' << __LINE__ << ' ' << __PRETTY_FUNCTION__ << ' ' << diff.count() << '\n';
+#endif // GNA_DEBUG
             return(epsilon_final);
         }
 
@@ -518,6 +539,10 @@ void PwlDesignOpt(const DnnActivation activation_type,
                     const float scale_out,
                     const float pwlMaxErrorPercent,
                     const bool low_precision) {
+#ifdef GNA_DEBUG
+    auto start = std::chrono::high_resolution_clock::now();
+#endif // GNA_DEBUG
+
     std::vector<pwl_t> pwl;
     double err_pct = 0.0;
     auto minInputStats = 0.0f;
@@ -624,6 +649,12 @@ void PwlDesignOpt(const DnnActivation activation_type,
         default:
             break;
     }
+
+#ifdef GNA_DEBUG
+    auto end = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> diff = end - start;
+    gnalog() << __FILE__ << ':' << __LINE__ << ' ' << __PRETTY_FUNCTION__ << ' ' << diff.count() << '\n';
+#endif // GNA_DEBUG
 }
 
 void PwlDesign(const DnnActivation activation_type,
